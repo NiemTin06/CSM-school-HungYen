@@ -15,6 +15,8 @@ import { SiteSettingsModule } from "@/modules/site_settings/site_settings.module
 import { StaffsModule } from "@/modules/staffs/staffs.module.js";
 import { UsersModule } from "@/modules/users/users.module.js";
 import { AuthModule } from '@/auth/auth.module.js';
+import { JwtAuthGuard } from "./auth/passport/jwt-auth.guard.js";
+import { APP_GUARD } from "@nestjs/core";
 
 @Module({
   imports: [
@@ -46,6 +48,10 @@ import { AuthModule } from '@/auth/auth.module.js';
 
   ],
   controllers: [],
-  providers: [],
+  providers: [{
+     provide: APP_GUARD,
+    useClass: JwtAuthGuard,
+  }
+  ],
 })
 export class AppModule {}

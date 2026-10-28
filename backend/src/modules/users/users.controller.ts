@@ -3,6 +3,7 @@ import { UsersService } from './users.service.js';
 import { AdminCreateUserDto } from './dto/admin-create-user.dto.js';
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto.js';
 import { ParseObjectIdPipe } from '@nestjs/mongoose';
+import { Public } from '@/decorator/customize.js';
 
 @Controller('users')
 export class UsersController {
@@ -15,6 +16,7 @@ export class UsersController {
   }
  //done 
   @Get()
+  @Public()
   async findAll(
     @Query() query: string,
     @Query("current") current: string,
