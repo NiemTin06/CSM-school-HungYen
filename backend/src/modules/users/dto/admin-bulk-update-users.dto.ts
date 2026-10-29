@@ -2,11 +2,9 @@ import {
   ArrayNotEmpty,
   IsArray,
   IsBoolean,
-  IsEnum,
   IsMongoId,
   IsOptional,
 } from 'class-validator';
-import { UserRole } from '../schemas/user.schema.js';
 
 export class AdminBulkUpdateUsersDto {
   @IsArray({ message: 'ids phải là một mảng danh sách' })
@@ -22,6 +20,6 @@ export class AdminBulkUpdateUsersDto {
   isActive?: boolean;
 
   @IsOptional()
-  @IsEnum(UserRole, { message: 'Role phải là admin hoặc editor' })
-  role?: UserRole;
+  @IsMongoId({ message: 'role_id phải là MongoDB ObjectId hợp lệ' })
+  role_id?: string;
 }

@@ -6,14 +6,18 @@ import { InjectModel } from '@nestjs/mongoose';
 import { hashPasswordHelper } from '../../common/helpers/password.helper.js';
 import aqp from 'api-query-params'
 import { AdminUpdateUserDto } from './dto/admin-update-user.dto.js';
-
+import { generateRandomPassword } from '@/common/utils/generate-password.js';
+import { v4 as uuidv4 } from 'uuid';
+import { MailerService } from '@nestjs-modules/mailer';
 
 @Injectable()
 export class UsersService {
 
   constructor(
     @InjectModel(User.name) 
-    private userModel: Model<User>
+    private userModel: Model<User>,
+    private readonly mailerService: MailerService
+    
   ) {}
 
   isEmailExist = async(email: string) => { 
@@ -23,21 +27,35 @@ export class UsersService {
   }
 
   async create(createUserDto: AdminCreateUserDto) {
-    const {name, email, password, role } = createUserDto;
+    const { name, email, password, role_id } = createUserDto;
 
     const isExist = await this.isEmailExist(email);
     if (isExist){
       throw new BadRequestException(`Email đã tồn tại: ${email}. Vui lòng sử dụng email khác`)
     }
-
     const hashPassword = await hashPasswordHelper(password);
 
     const user = await this.userModel.create({
-        name, email,
-       passwordHash: hashPassword, role
-      });
+      name,
+      email,
+      passwordHash: hashPassword,
+      role_id,
+    });
+
+
+    await this.mailerService.sendMail({
+      to: email,
+      subject: 'Thông báo tạo tài khoản',
+      template: "register",
+      context: {
+        name: name,
+        password: password
+      }
+    })
+
     return {
-      _id: user._id
+      _id: user._id,
+      password: password
     }
   }
 
@@ -97,7 +115,6 @@ export class UsersService {
 
   if (!user) throw new NotFoundException('Không tìm thấy người dùng');
   return { message: 'Đặt lại mật khẩu thành công' };
-}
-  
+  }
 
 }

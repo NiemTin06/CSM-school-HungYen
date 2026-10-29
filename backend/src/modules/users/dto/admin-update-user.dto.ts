@@ -4,7 +4,7 @@ import { AdminCreateUserDto } from './admin-create-user.dto.js';
 import { Transform } from 'class-transformer';
 
 export class AdminUpdateUserDto extends PartialType(
-  OmitType(AdminCreateUserDto, ['password', 'email'] as const),
+  OmitType(AdminCreateUserDto, ['email'] as const),
 ) {
   @IsOptional()
   @Transform(({ value }) => {

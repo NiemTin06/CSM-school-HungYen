@@ -17,6 +17,11 @@ import { UsersModule } from "@/modules/users/users.module.js";
 import { AuthModule } from '@/auth/auth.module.js';
 import { JwtAuthGuard } from "./auth/passport/jwt-auth.guard.js";
 import { APP_GUARD } from "@nestjs/core";
+import { HandlebarsAdapter } from "@nestjs-modules/mailer/adapters/handlebars.adapter.js";
+import { MailerModule } from "@nestjs-modules/mailer";
+import { join } from "path";
+import { RolesModule } from './roles/roles.module.js';
+import { PermisionsModule } from './permisions/permisions.module.js';
 
 @Module({
   imports: [
@@ -31,9 +36,9 @@ import { APP_GUARD } from "@nestjs/core";
     SiteSettingsModule,
     StaffsModule,
     UsersModule,
+    AuthModule,
 
     ConfigModule.forRoot({isGlobal: true}),
-
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
@@ -42,10 +47,33 @@ import { APP_GUARD } from "@nestjs/core";
       inject: [ConfigService],
     }),
 
-    AuthModule,
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        transport: {
+          host: config.get('MAIL_HOST'),
+          port: config.get('MAIL_PORT'),
+          secure: true,
+          auth: {
+            user: config.get<string>('MAIL_USER'),
+            pass: config.get<string>('MAIL_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: config.get('MAIL_FROM'),
+        },
+        template: {
+          dir: join(process.cwd(), 'src', 'mail', 'templates'),
+          adapter: new HandlebarsAdapter(),
+          options: { strict: true },
+        },
+      }),
+    }),
 
+    RolesModule,
 
-
+    PermisionsModule,
   ],
   controllers: [],
   providers: [{
